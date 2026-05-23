@@ -1,0 +1,3 @@
+CREATE DATABASE auth_db;
+CREATE DATABASE nurse_db;
+CREATE DATABASE review_db;

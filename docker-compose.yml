@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: susterku-postgres
+    environment:
+      POSTGRES_USER: susterku
+      POSTGRES_PASSWORD: susterku123
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U susterku -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - susterku-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: susterku-auth
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: susterku
+      SPRING_DATASOURCE_PASSWORD: susterku123
+      JWT_SECRET: susterku-super-secret-jwt-key-min-32-chars-2024
+      JWT_EXPIRATION_MS: 86400000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - susterku-network
+
+  nurse-service:
+    build:
+      context: ./nurse-service
+      dockerfile: Dockerfile
+    container_name: susterku-nurse
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nurse_db
+      SPRING_DATASOURCE_USERNAME: susterku
+      SPRING_DATASOURCE_PASSWORD: susterku123
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - susterku-network
+
+  review-service:
+    build:
+      context: ./review-service
+      dockerfile: Dockerfile
+    container_name: susterku-review
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/review_db
+      SPRING_DATASOURCE_USERNAME: susterku
+      SPRING_DATASOURCE_PASSWORD: susterku123
+      NURSE_SERVICE_URL: http://nurse-service:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nurse-service:
+        condition: service_started
+    networks:
+      - susterku-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: susterku-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8081
+      NURSE_SERVICE_URL: http://nurse-service:8082
+      REVIEW_SERVICE_URL: http://review-service:8083
+    depends_on:
+      - auth-service
+      - nurse-service
+      - review-service
+    networks:
+      - susterku-network
+
+networks:
+  susterku-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

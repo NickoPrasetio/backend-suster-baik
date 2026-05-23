@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+
+        - id: nurse-service
+          uri: ${NURSE_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/nurses/**
+
+        - id: review-service
+          uri: ${REVIEW_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/reviews/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
