@@ -22,4 +22,8 @@ public class UserEntity {
     private String password;
 
     private String phone;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private String role = "ROLE_USER";
 }

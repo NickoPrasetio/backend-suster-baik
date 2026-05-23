@@ -28,11 +28,11 @@ public class AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
+                .role("ROLE_USER")
                 .build();
 
         user = userRepository.save(user);
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
-
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
         return toResponse(user, token);
     }
 
@@ -44,7 +44,7 @@ public class AuthService {
             throw new IllegalArgumentException("Email atau password salah");
         }
 
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
         return toResponse(user, token);
     }
 
@@ -55,6 +55,7 @@ public class AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .role(user.getRole())
                 .build();
     }
 }

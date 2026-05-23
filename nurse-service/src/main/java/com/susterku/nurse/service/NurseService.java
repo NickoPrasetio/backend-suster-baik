@@ -1,5 +1,6 @@
 package com.susterku.nurse.service;
 
+import com.susterku.nurse.dto.NurseCreateRequest;
 import com.susterku.nurse.dto.NurseDto;
 import com.susterku.nurse.dto.RatingUpdateRequest;
 import com.susterku.nurse.entity.NurseEntity;
@@ -26,6 +27,23 @@ public class NurseService {
         return nurseRepository.findById(id)
                 .map(this::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("Suster tidak ditemukan"));
+    }
+
+    public NurseDto create(NurseCreateRequest request) {
+        NurseEntity nurse = NurseEntity.builder()
+                .name(request.getName())
+                .avatar(request.getAvatar() != null ? request.getAvatar() : "")
+                .age(request.getAge())
+                .experience(request.getExperience())
+                .rating(0.0)
+                .totalReviews(0)
+                .specializations(request.getSpecializations() != null ? request.getSpecializations() : List.of())
+                .location(request.getLocation())
+                .pricePerDay(request.getPricePerDay())
+                .isAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true)
+                .bio(request.getBio())
+                .build();
+        return toDto(nurseRepository.save(nurse));
     }
 
     public void updateRating(String id, RatingUpdateRequest request) {

@@ -35,6 +35,9 @@ spring:
           predicates:
             - Path=/api/reviews/**
 
+jwt:
+  secret: ${JWT_SECRET:susterku-super-secret-jwt-key-min-32-chars-2024}
+
 management:
   endpoints:
     web:

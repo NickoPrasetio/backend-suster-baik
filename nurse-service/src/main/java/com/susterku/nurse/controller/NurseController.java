@@ -1,9 +1,11 @@
 package com.susterku.nurse.controller;
 
+import com.susterku.nurse.dto.NurseCreateRequest;
 import com.susterku.nurse.dto.NurseDto;
 import com.susterku.nurse.dto.RatingUpdateRequest;
 import com.susterku.nurse.service.NurseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +29,16 @@ public class NurseController {
         return ResponseEntity.ok(nurseService.findById(id));
     }
 
-    /** Internal endpoint called by review-service to sync rating */
+    @PostMapping("/api/nurses")
+    public ResponseEntity<NurseDto> createNurse(
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestBody NurseCreateRequest request) {
+        if (!"ROLE_ADMIN".equals(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(nurseService.create(request));
+    }
+
     @PutMapping("/internal/nurses/{id}/rating")
     public ResponseEntity<Void> updateRating(
             @PathVariable String id,
