@@ -19,3 +19,13 @@ spring:
   sql:
     init:
       mode: never
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: nurse-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.susterku.nurse.kafka"
+        spring.json.value.default.type: "com.susterku.nurse.kafka.RatingUpdateEvent"

@@ -1,9 +1,9 @@
 package com.susterku.review.service;
 
-import com.susterku.review.client.NurseClient;
 import com.susterku.review.dto.ReviewDto;
 import com.susterku.review.dto.ReviewRequest;
 import com.susterku.review.entity.ReviewEntity;
+import com.susterku.review.kafka.ReviewEventProducer;
 import com.susterku.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +16,7 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final NurseClient nurseClient;
+    private final ReviewEventProducer reviewEventProducer;
 
     public List<ReviewDto> getByNurseId(String nurseId) {
         return reviewRepository.findByNurseIdOrderByDateDesc(nurseId)
@@ -36,7 +36,6 @@ public class ReviewService {
 
         review = reviewRepository.save(review);
 
-        // Recalculate and sync rating to nurse-service
         List<ReviewEntity> allReviews = reviewRepository.findByNurseIdOrderByDateDesc(request.getNurseId());
         double avgRating = allReviews.stream()
                 .mapToInt(ReviewEntity::getRating)
@@ -44,7 +43,7 @@ public class ReviewService {
                 .orElse(request.getRating());
         double roundedRating = Math.round(avgRating * 10.0) / 10.0;
 
-        nurseClient.updateNurseRating(request.getNurseId(), roundedRating, allReviews.size());
+        reviewEventProducer.publishRatingUpdate(request.getNurseId(), roundedRating, allReviews.size());
 
         return toDto(review);
     }
