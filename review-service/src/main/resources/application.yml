@@ -6,8 +6,8 @@ spring:
     name: review-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/review_db}
-    username: ${SPRING_DATASOURCE_USERNAME:susterku}
-    password: ${SPRING_DATASOURCE_PASSWORD:susterku123}
+    username: ${SPRING_DATASOURCE_USERNAME:tukangku}
+    password: ${SPRING_DATASOURCE_PASSWORD:tukangku123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -16,8 +16,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:

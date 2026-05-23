@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: api-gateway
+  codec:
+    max-in-memory-size: 6MB
   cloud:
     gateway:
       globalcors:
@@ -25,10 +27,10 @@ spring:
           predicates:
             - Path=/api/auth/**
 
-        - id: nurse-service
-          uri: ${NURSE_SERVICE_URL:http://localhost:8082}
+        - id: worker-service
+          uri: ${WORKER_SERVICE_URL:http://localhost:8082}
           predicates:
-            - Path=/api/nurses/**
+            - Path=/api/workers/**
 
         - id: review-service
           uri: ${REVIEW_SERVICE_URL:http://localhost:8083}
@@ -36,7 +38,7 @@ spring:
             - Path=/api/reviews/**
 
 jwt:
-  secret: ${JWT_SECRET:susterku-super-secret-jwt-key-min-32-chars-2024}
+  secret: ${JWT_SECRET:tukangku-super-secret-jwt-key-min-32-chars-2024}
 
 management:
   endpoints:

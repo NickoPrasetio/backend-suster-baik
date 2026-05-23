@@ -10,10 +10,10 @@
         <version>3.3.4</version>
     </parent>
 
-    <groupId>com.susterku</groupId>
-    <artifactId>nurse-service</artifactId>
+    <groupId>com.tukangku</groupId>
+    <artifactId>worker-service</artifactId>
     <version>1.0.0</version>
-    <name>nurse-service</name>
+    <name>worker-service</name>
 
     <properties>
         <java.version>21</java.version>
@@ -45,6 +45,11 @@
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.10</version>
         </dependency>
     </dependencies>
 

@@ -3,11 +3,11 @@ server:
 
 spring:
   application:
-    name: nurse-service
+    name: worker-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/nurse_db}
-    username: ${SPRING_DATASOURCE_USERNAME:susterku}
-    password: ${SPRING_DATASOURCE_PASSWORD:susterku123}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/worker_db}
+    username: ${SPRING_DATASOURCE_USERNAME:tukangku}
+    password: ${SPRING_DATASOURCE_PASSWORD:tukangku123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -19,13 +19,24 @@ spring:
   sql:
     init:
       mode: never
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
-      group-id: nurse-service-group
+      group-id: worker-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.susterku.nurse.kafka"
-        spring.json.value.default.type: "com.susterku.nurse.kafka.RatingUpdateEvent"
+        spring.json.trusted.packages: "com.tukangku.worker.kafka"
+        spring.json.value.default.type: "com.tukangku.worker.kafka.RatingUpdateEvent"
+
+
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:tukangku}
+  secret-key: ${MINIO_SECRET_KEY:tukangku123}
+  public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}

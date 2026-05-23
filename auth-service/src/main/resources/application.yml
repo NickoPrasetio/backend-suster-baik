@@ -6,8 +6,8 @@ spring:
     name: auth-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/auth_db}
-    username: ${SPRING_DATASOURCE_USERNAME:susterku}
-    password: ${SPRING_DATASOURCE_PASSWORD:susterku123}
+    username: ${SPRING_DATASOURCE_USERNAME:tukangku}
+    password: ${SPRING_DATASOURCE_PASSWORD:tukangku123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -18,6 +18,17 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 jwt:
-  secret: ${JWT_SECRET:susterku-super-secret-jwt-key-min-32-chars-2024}
+  secret: ${JWT_SECRET:tukangku-super-secret-jwt-key-min-32-chars-2024}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:tukangku}
+  secret-key: ${MINIO_SECRET_KEY:tukangku123}
+  public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}
