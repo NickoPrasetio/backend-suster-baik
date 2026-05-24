@@ -84,6 +84,7 @@ services:
       MINIO_ACCESS_KEY: tukangku
       MINIO_SECRET_KEY: tukangku123
       MINIO_PUBLIC_URL: http://localhost:9000
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id.apps.googleusercontent.com}
     depends_on:
       postgres:
         condition: service_healthy

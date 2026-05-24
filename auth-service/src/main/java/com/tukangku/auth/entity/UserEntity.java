@@ -33,6 +33,15 @@ public class UserEntity {
     @Builder.Default
     private String userType = "CUSTOMER";
 
+    /** LOCAL | GOOGLE */
+    @Column(nullable = false)
+    @Builder.Default
+    private String provider = "LOCAL";
+
+    /** Google subject ID — null untuk user yang daftar manual */
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
     private Double latitude;
     private Double longitude;
 }

@@ -32,3 +32,7 @@ minio:
   access-key: ${MINIO_ACCESS_KEY:tukangku}
   secret-key: ${MINIO_SECRET_KEY:tukangku123}
   public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}
+
+# Google client-id opsional — saat ini validasi dilakukan via Google userinfo endpoint
+# google:
+#   client-id: ${GOOGLE_CLIENT_ID:your-google-client-id.apps.googleusercontent.com}

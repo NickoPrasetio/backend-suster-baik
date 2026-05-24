@@ -1,10 +1,14 @@
 package com.tukangku.auth.controller;
 
 import com.tukangku.auth.dto.AuthResponse;
+import com.tukangku.auth.dto.GoogleAuthRequest;
+import com.tukangku.auth.dto.GoogleCheckResponse;
+import com.tukangku.auth.dto.GoogleCompleteRequest;
 import com.tukangku.auth.dto.LoginRequest;
 import com.tukangku.auth.dto.RegisterRequest;
 import com.tukangku.auth.dto.UpdateProfileRequest;
 import com.tukangku.auth.service.AuthService;
+import com.tukangku.auth.service.GoogleAuthService;
 import com.tukangku.auth.service.MinioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +26,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
-    private final MinioService minioService;
+    private final AuthService       authService;
+    private final GoogleAuthService googleAuthService;
+    private final MinioService      minioService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -33,6 +38,39 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    /**
+     * Step 1 — Cek apakah user Google sudah ada di database.
+     * Response: { newUser: true/false, ... }
+     * Jika newUser == false → langsung login (token disertakan).
+     * Jika newUser == true  → frontend redirect ke form completion.
+     */
+    @PostMapping("/google")
+    public ResponseEntity<?> googleCheck(@Valid @RequestBody GoogleAuthRequest request) {
+        try {
+            GoogleCheckResponse response = googleAuthService.checkUser(request.getAccessToken());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Step 2 — Selesaikan registrasi user Google baru.
+     * Dipanggil setelah user mengisi form completion (pilih userType, opsional phone).
+     */
+    @PostMapping("/google/complete")
+    public ResponseEntity<?> googleComplete(@Valid @RequestBody GoogleCompleteRequest request) {
+        try {
+            AuthResponse response = googleAuthService.completeSignup(
+                    request.getAccessToken(), request.getUserType(), request.getPhone());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/me")
