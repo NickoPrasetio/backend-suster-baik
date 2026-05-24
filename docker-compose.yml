@@ -144,6 +144,26 @@ services:
     networks:
       - tukangku-network
 
+  booking-service:
+    build:
+      context: ./booking-service
+      dockerfile: Dockerfile
+    container_name: tukangku-booking
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/booking_db
+      SPRING_DATASOURCE_USERNAME: tukangku
+      SPRING_DATASOURCE_PASSWORD: tukangku123
+      WORKER_SERVICE_URL: http://nurse-service:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nurse-service:
+        condition: service_started
+    networks:
+      - tukangku-network
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -155,11 +175,13 @@ services:
       AUTH_SERVICE_URL: http://auth-service:8081
       WORKER_SERVICE_URL: http://nurse-service:8082
       REVIEW_SERVICE_URL: http://review-service:8083
+      BOOKING_SERVICE_URL: http://booking-service:8084
       JWT_SECRET: tukangku-super-secret-jwt-key-min-32-chars-2024
     depends_on:
       - auth-service
       - nurse-service
       - review-service
+      - booking-service
     networks:
       - tukangku-network
 

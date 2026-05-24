@@ -1,3 +1,4 @@
 CREATE DATABASE auth_db;
 CREATE DATABASE worker_db;
 CREATE DATABASE review_db;
+CREATE DATABASE booking_db;

@@ -122,6 +122,23 @@ public class WorkerController {
         }
     }
 
+    /**
+     * Internal endpoint — hanya dipanggil oleh booking-service (tidak melalui Gateway).
+     * Atomik: validasi workStatus OPEN, set BOOKED, return worker info.
+     */
+    @PostMapping("/internal/workers/{id}/book")
+    public ResponseEntity<?> bookWorker(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(workerService.bookWorker(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/internal/workers/{id}/rating")
     public ResponseEntity<Void> updateRating(
             @PathVariable String id,

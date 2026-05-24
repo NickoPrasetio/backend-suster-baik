@@ -10,6 +10,7 @@ import com.tukangku.worker.entity.WorkerEntity;
 import com.tukangku.worker.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -95,6 +96,30 @@ public class WorkerService {
         return workerRepository.findByAuthUserId(authUserId)
                 .map(this::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+    }
+
+    /**
+     * Dipanggil oleh booking-service melalui endpoint internal.
+     * Atomik: validasi workStatus OPEN → set BOOKED → return WorkerDto.
+     * Melempar exception jika tukang tidak dapat dibooking.
+     */
+    @Transactional
+    public WorkerDto bookWorker(String workerId) {
+        WorkerEntity worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new IllegalArgumentException("Tukang tidak ditemukan"));
+
+        if ("BOOKED".equals(worker.getWorkStatus())) {
+            throw new IllegalStateException("Tukang sedang dalam pekerjaan lain");
+        }
+        if ("CLOSED".equals(worker.getWorkStatus())) {
+            throw new IllegalStateException("Tukang tidak menerima pekerjaan saat ini");
+        }
+
+        worker.setWorkStatus("BOOKED");
+        worker.setIsAvailable(false);
+        workerRepository.save(worker);
+
+        return toDto(worker);
     }
 
     private WorkerDto toDto(WorkerEntity e) {
