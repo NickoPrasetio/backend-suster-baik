@@ -28,4 +28,11 @@ public class UserEntity {
     private String role = "ROLE_USER";
 
     private String avatar;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private String userType = "CUSTOMER";
+
+    private Double latitude;
+    private Double longitude;
 }

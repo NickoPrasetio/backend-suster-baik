@@ -17,6 +17,7 @@ spring:
               - GET
               - POST
               - PUT
+              - PATCH
               - DELETE
               - OPTIONS
             allowedHeaders: "*"
@@ -31,6 +32,11 @@ spring:
           uri: ${WORKER_SERVICE_URL:http://localhost:8082}
           predicates:
             - Path=/api/workers/**
+
+        - id: tukang-self-service
+          uri: ${WORKER_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/tukang/**
 
         - id: review-service
           uri: ${REVIEW_SERVICE_URL:http://localhost:8083}

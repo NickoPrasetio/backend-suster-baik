@@ -3,6 +3,9 @@ package com.tukangku.worker.service;
 import com.tukangku.worker.dto.WorkerCreateRequest;
 import com.tukangku.worker.dto.WorkerDto;
 import com.tukangku.worker.dto.RatingUpdateRequest;
+import com.tukangku.worker.dto.WorkStatusUpdateRequest;
+import com.tukangku.worker.dto.TukangSalaryUpdateRequest;
+import com.tukangku.worker.dto.TukangLocationUpdateRequest;
 import com.tukangku.worker.entity.WorkerEntity;
 import com.tukangku.worker.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +44,8 @@ public class WorkerService {
                 .location(request.getLocation())
                 .pricePerDay(request.getPricePerDay())
                 .isAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true)
+                .workStatus(request.getWorkStatus() != null ? request.getWorkStatus() : "OPEN")
+                .authUserId(request.getAuthUserId())
                 .bio(request.getBio())
                 .build();
         return toDto(workerRepository.save(worker));
@@ -61,6 +66,37 @@ public class WorkerService {
         workerRepository.save(worker);
     }
 
+    // ─── Tukang self-service endpoints ────────────────────────────────────────
+
+    public WorkerDto updateWorkStatus(String authUserId, WorkStatusUpdateRequest request) {
+        WorkerEntity worker = workerRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+        worker.setWorkStatus(request.getStatus());
+        worker.setIsAvailable("OPEN".equals(request.getStatus()));
+        return toDto(workerRepository.save(worker));
+    }
+
+    public WorkerDto updateSalary(String authUserId, TukangSalaryUpdateRequest request) {
+        WorkerEntity worker = workerRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+        worker.setPricePerDay(request.getPricePerDay());
+        return toDto(workerRepository.save(worker));
+    }
+
+    public WorkerDto updateLocation(String authUserId, TukangLocationUpdateRequest request) {
+        WorkerEntity worker = workerRepository.findByAuthUserId(authUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+        worker.setLatitude(request.getLatitude());
+        worker.setLongitude(request.getLongitude());
+        return toDto(workerRepository.save(worker));
+    }
+
+    public WorkerDto getByAuthUserId(String authUserId) {
+        return workerRepository.findByAuthUserId(authUserId)
+                .map(this::toDto)
+                .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+    }
+
     private WorkerDto toDto(WorkerEntity e) {
         return WorkerDto.builder()
                 .id(e.getId())
@@ -74,6 +110,10 @@ public class WorkerService {
                 .location(e.getLocation())
                 .pricePerDay(e.getPricePerDay())
                 .isAvailable(e.getIsAvailable())
+                .workStatus(e.getWorkStatus())
+                .authUserId(e.getAuthUserId())
+                .latitude(e.getLatitude())
+                .longitude(e.getLongitude())
                 .bio(e.getBio())
                 .build();
     }

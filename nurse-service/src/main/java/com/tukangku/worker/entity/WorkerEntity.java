@@ -45,6 +45,19 @@ public class WorkerEntity {
     @Column(name = "is_available")
     private Boolean isAvailable;
 
+    /** OPEN | CLOSED — status yang dikendalikan tukang sendiri */
+    @Column(name = "work_status", nullable = false)
+    @Builder.Default
+    private String workStatus = "OPEN";
+
+    /** ID user di auth-service, digunakan untuk lookup saat tukang update datanya sendiri */
+    @Column(name = "auth_user_id", unique = true)
+    private String authUserId;
+
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(columnDefinition = "TEXT")
     private String bio;
 }

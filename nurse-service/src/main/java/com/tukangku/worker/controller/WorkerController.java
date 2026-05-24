@@ -3,6 +3,10 @@ package com.tukangku.worker.controller;
 import com.tukangku.worker.dto.WorkerCreateRequest;
 import com.tukangku.worker.dto.WorkerDto;
 import com.tukangku.worker.dto.RatingUpdateRequest;
+import com.tukangku.worker.dto.WorkStatusUpdateRequest;
+import com.tukangku.worker.dto.TukangSalaryUpdateRequest;
+import com.tukangku.worker.dto.TukangLocationUpdateRequest;
+import jakarta.validation.Valid;
 import com.tukangku.worker.service.MinioService;
 import com.tukangku.worker.service.WorkerService;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +70,55 @@ public class WorkerController {
             return ResponseEntity.ok(updated);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Gagal upload foto"));
+        }
+    }
+
+    // ─── Tukang self-service — menggunakan X-User-Id dari API Gateway ────────────
+
+    @GetMapping("/api/tukang/profile")
+    public ResponseEntity<?> getTukangProfile(
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        try {
+            return ResponseEntity.ok(workerService.getByAuthUserId(userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/api/tukang/status")
+    public ResponseEntity<?> updateWorkStatus(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody WorkStatusUpdateRequest request) {
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        try {
+            return ResponseEntity.ok(workerService.updateWorkStatus(userId, request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/api/tukang/salary")
+    public ResponseEntity<?> updateSalary(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody TukangSalaryUpdateRequest request) {
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        try {
+            return ResponseEntity.ok(workerService.updateSalary(userId, request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/api/tukang/location")
+    public ResponseEntity<?> updateLocation(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @Valid @RequestBody TukangLocationUpdateRequest request) {
+        if (userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Unauthorized"));
+        try {
+            return ResponseEntity.ok(workerService.updateLocation(userId, request));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 

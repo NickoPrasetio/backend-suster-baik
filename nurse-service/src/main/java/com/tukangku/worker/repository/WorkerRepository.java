@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface WorkerRepository extends JpaRepository<WorkerEntity, String> {
+
+    Optional<WorkerEntity> findByAuthUserId(String authUserId);
 
     @Query("SELECT DISTINCT n FROM WorkerEntity n LEFT JOIN n.specializations s " +
            "WHERE (:search IS NULL OR :search = '' OR " +

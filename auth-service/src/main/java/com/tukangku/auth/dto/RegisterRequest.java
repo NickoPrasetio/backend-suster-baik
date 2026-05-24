@@ -17,4 +17,9 @@ public class RegisterRequest {
     private String password;
 
     private String phone;
+
+    private String userType;
+
+    private Double latitude;
+    private Double longitude;
 }

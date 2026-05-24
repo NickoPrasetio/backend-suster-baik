@@ -19,5 +19,9 @@ public class WorkerDto {
     private String location;
     private BigDecimal pricePerDay;
     private Boolean isAvailable;
+    private String workStatus;
+    private String authUserId;
+    private Double latitude;
+    private Double longitude;
     private String bio;
 }

@@ -25,12 +25,18 @@ public class AuthService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email sudah terdaftar");
         }
+        String userType = (request.getUserType() != null && !request.getUserType().isBlank())
+                ? request.getUserType().toUpperCase()
+                : "CUSTOMER";
         UserEntity user = UserEntity.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role("ROLE_USER")
+                .userType(userType)
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
                 .build();
         user = userRepository.save(user);
         String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
@@ -91,6 +97,9 @@ public class AuthService {
                 .phone(user.getPhone())
                 .role(user.getRole())
                 .avatar(user.getAvatar())
+                .userType(user.getUserType())
+                .latitude(user.getLatitude())
+                .longitude(user.getLongitude())
                 .build();
     }
 }

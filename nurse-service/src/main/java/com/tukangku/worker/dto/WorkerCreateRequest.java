@@ -15,5 +15,7 @@ public class WorkerCreateRequest {
     private String location;
     private BigDecimal pricePerDay;
     private Boolean isAvailable;
+    private String workStatus;
+    private String authUserId;
     private String bio;
 }
