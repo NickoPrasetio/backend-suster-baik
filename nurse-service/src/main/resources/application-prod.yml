@@ -1,0 +1,13 @@
+# ── Production profile — aktif saat SPRING_PROFILES_ACTIVE=prod ──
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate   # prod: jangan auto-modify schema!
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.tukangku: INFO
+    org.hibernate: WARN

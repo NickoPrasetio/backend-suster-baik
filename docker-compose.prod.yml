@@ -1,0 +1,70 @@
+# =================================================================
+# TukangBaik — Production Overrides
+# Jalankan dengan: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Atau pakai:      make up-prod
+# =================================================================
+# File ini di-merge di atas docker-compose.yml:
+#   - Mengaktifkan Spring profile "prod" (ddl-auto: validate, log lebih minimal)
+#   - Menutup port internal agar tidak expose ke publik
+#   - Menggunakan .env.prod untuk credentials production
+# =================================================================
+
+services:
+  postgres:
+    # Port database tidak expose ke publik di production
+    ports: []
+    # Volume terpisah — data prod tidak bercampur dengan data dev
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  minio:
+    # MinIO console tidak expose ke publik di production
+    ports:
+      - "9000:9000"   # storage API tetap perlu (atau ganti dengan CDN/R2)
+    # Volume terpisah
+    volumes:
+      - minio_data_prod:/data
+
+  kafka:
+    ports: []         # Kafka tidak perlu expose di production
+
+  auth-service:
+    ports: []
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  nurse-service:
+    ports: []
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  review-service:
+    ports: []
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  booking-service:
+    ports: []
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  api-gateway:
+    # Gateway tetap expose port 8080 (atau pakai reverse proxy Nginx/Caddy)
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+# Volume prod terpisah total dari dev
+volumes:
+  postgres_data_prod:
+  minio_data_prod:

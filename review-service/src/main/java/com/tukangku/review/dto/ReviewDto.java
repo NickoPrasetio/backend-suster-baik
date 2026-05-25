@@ -3,6 +3,8 @@ package com.tukangku.review.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data @Builder
 public class ReviewDto {
     private String id;
@@ -12,4 +14,6 @@ public class ReviewDto {
     private Integer rating;
     private String comment;
     private String date;
+    private String bookingId;
+    private List<String> photoUrls;
 }

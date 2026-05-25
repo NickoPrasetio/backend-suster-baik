@@ -9,6 +9,8 @@ import com.tukangku.worker.dto.TukangLocationUpdateRequest;
 import com.tukangku.worker.entity.WorkerEntity;
 import com.tukangku.worker.repository.WorkerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,12 @@ public class WorkerService {
                 .stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    /** Paginated — untuk infinite scroll (10 tukang per halaman) */
+    public Page<WorkerDto> findPage(String search, Boolean available, Pageable pageable) {
+        return workerRepository.findPageBySearchAndAvailability(search, available, pageable)
+                .map(this::toDto);
     }
 
     public WorkerDto findById(String id) {
@@ -96,6 +104,22 @@ public class WorkerService {
         return workerRepository.findByAuthUserId(authUserId)
                 .map(this::toDto)
                 .orElseThrow(() -> new IllegalArgumentException("Profil tukang tidak ditemukan"));
+    }
+
+    /**
+     * Dipanggil oleh booking-service setelah order selesai (COMPLETED).
+     * Mengembalikan status tukang ke OPEN agar bisa menerima booking baru.
+     * Hanya mengubah status jika saat ini BOOKED (tukang yang sengaja CLOSED tidak diubah).
+     */
+    @Transactional
+    public void releaseWorker(String workerId) {
+        WorkerEntity worker = workerRepository.findById(workerId)
+                .orElseThrow(() -> new IllegalArgumentException("Tukang tidak ditemukan"));
+        if ("BOOKED".equals(worker.getWorkStatus())) {
+            worker.setWorkStatus("OPEN");
+            worker.setIsAvailable(true);
+            workerRepository.save(worker);
+        }
     }
 
     /**

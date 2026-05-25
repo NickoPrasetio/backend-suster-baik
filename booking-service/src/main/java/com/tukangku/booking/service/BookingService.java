@@ -103,6 +103,32 @@ public class BookingService {
         return toDto(booking);
     }
 
+    /**
+     * Customer menandai order selesai: CONFIRMED → COMPLETED.
+     * Setelah sukses, worker-service dipanggil untuk melepas status BOOKED → OPEN.
+     */
+    @Transactional
+    public BookingDto completeByCustomer(String bookingId, String customerId) {
+        BookingEntity booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));
+
+        if (!booking.getCustomerId().equals(customerId)) {
+            throw new IllegalStateException("Tidak diizinkan mengubah status booking ini");
+        }
+        if (!"CONFIRMED".equals(booking.getStatus())) {
+            throw new IllegalStateException(
+                    "Order belum dikonfirmasi tukang (status: " + booking.getStatus() + ")");
+        }
+
+        booking.setStatus("COMPLETED");
+        booking = bookingRepository.save(booking);
+
+        // Non-fatal: release worker back to OPEN
+        workerClient.releaseWorker(booking.getWorkerId());
+
+        return toDto(booking);
+    }
+
     public BookingDto getById(String bookingId, String requesterId) {
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));

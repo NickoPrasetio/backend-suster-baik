@@ -21,3 +21,13 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 260MB   # 5 foto × 50 MB + overhead
+
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:tukangku}
+  secret-key: ${MINIO_SECRET_KEY:tukangku123}
+  public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}

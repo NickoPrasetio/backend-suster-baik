@@ -1,6 +1,8 @@
 package com.tukangku.worker.repository;
 
 import com.tukangku.worker.entity.WorkerEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +23,23 @@ public interface WorkerRepository extends JpaRepository<WorkerEntity, String> {
     List<WorkerEntity> findBySearchAndAvailability(
             @Param("search") String search,
             @Param("available") Boolean available);
+
+    @Query(value =
+           "SELECT DISTINCT n FROM WorkerEntity n LEFT JOIN n.specializations s " +
+           "WHERE (:search IS NULL OR :search = '' OR " +
+           "LOWER(n.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(n.location) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:available IS NULL OR n.isAvailable = :available)",
+           countQuery =
+           "SELECT COUNT(DISTINCT n) FROM WorkerEntity n LEFT JOIN n.specializations s " +
+           "WHERE (:search IS NULL OR :search = '' OR " +
+           "LOWER(n.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(n.location) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(s) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:available IS NULL OR n.isAvailable = :available)")
+    Page<WorkerEntity> findPageBySearchAndAvailability(
+            @Param("search") String search,
+            @Param("available") Boolean available,
+            Pageable pageable);
 }

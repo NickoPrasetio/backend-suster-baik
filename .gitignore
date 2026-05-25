@@ -10,3 +10,6 @@ target/
 .settings/
 *.log
 .DS_Store
+
+# Environment — prod secrets jangan di-commit
+.env.prod

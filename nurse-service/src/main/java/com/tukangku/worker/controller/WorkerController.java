@@ -10,6 +10,10 @@ import jakarta.validation.Valid;
 import com.tukangku.worker.service.MinioService;
 import com.tukangku.worker.service.WorkerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +35,17 @@ public class WorkerController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean available) {
         return ResponseEntity.ok(workerService.findAll(search, available));
+    }
+
+    /** Paginated endpoint untuk infinite scroll — 10 tukang per halaman */
+    @GetMapping("/api/workers/page")
+    public ResponseEntity<Page<WorkerDto>> getWorkersPage(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean available,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return ResponseEntity.ok(workerService.findPage(search, available, pageable));
     }
 
     @GetMapping("/api/workers/{id}")
@@ -149,6 +164,20 @@ public class WorkerController {
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Internal — dipanggil booking-service setelah order COMPLETED.
+     * Mengembalikan status tukang ke OPEN agar bisa menerima order baru.
+     */
+    @PostMapping("/internal/workers/{id}/release")
+    public ResponseEntity<?> releaseWorker(@PathVariable String id) {
+        try {
+            workerService.releaseWorker(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
         }
     }
 

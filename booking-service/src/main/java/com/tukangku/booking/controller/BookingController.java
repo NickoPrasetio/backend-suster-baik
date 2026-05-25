@@ -108,6 +108,31 @@ public class BookingController {
         }
     }
 
+    /**
+     * Customer menyelesaikan order: CONFIRMED → COMPLETED.
+     * Backend juga memanggil worker-service untuk set status tukang kembali ke OPEN.
+     */
+    @PatchMapping("/api/bookings/{id}/complete")
+    public ResponseEntity<?> completeBooking(
+            @RequestHeader(value = "X-User-Id", required = false) String userId,
+            @PathVariable String id) {
+
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        }
+        try {
+            BookingDto booking = bookingService.completeByCustomer(id, userId);
+            return ResponseEntity.ok(booking);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/api/bookings/{id}")
     public ResponseEntity<?> getBooking(
             @RequestHeader(value = "X-User-Id", required = false) String userId,

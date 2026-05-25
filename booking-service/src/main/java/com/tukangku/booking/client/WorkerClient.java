@@ -49,6 +49,19 @@ public class WorkerClient {
     }
 
     /**
+     * Lepas tukang setelah order COMPLETED: BOOKED → OPEN.
+     * Non-fatal — jika gagal, booking tetap dianggap selesai.
+     */
+    public void releaseWorker(String workerId) {
+        String url = workerServiceUrl + "/internal/workers/" + workerId + "/release";
+        try {
+            restTemplate.exchange(url, HttpMethod.POST, HttpEntity.EMPTY, Void.class);
+        } catch (Exception e) {
+            log.warn("Failed to release worker {} after completion: {}", workerId, e.getMessage());
+        }
+    }
+
+    /**
      * Panggil endpoint internal di worker-service yang secara atomik:
      * 1. Validasi workStatus == OPEN
      * 2. Set workStatus = BOOKED, isAvailable = false

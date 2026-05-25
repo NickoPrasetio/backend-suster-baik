@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reviews")
@@ -31,4 +33,15 @@ public class ReviewEntity {
 
     @Column(nullable = false)
     private LocalDate date;
+
+    /** ID booking yang terkait — opsional untuk review dengan foto */
+    @Column(name = "booking_id")
+    private String bookingId;
+
+    /** URL foto hasil kerja yang diupload customer ke MinIO */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "review_photos", joinColumns = @JoinColumn(name = "review_id"))
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    @Builder.Default
+    private List<String> photoUrls = new ArrayList<>();
 }

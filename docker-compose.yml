@@ -6,8 +6,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: tukangku
-      MINIO_ROOT_PASSWORD: tukangku123
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     volumes:
       - minio_data:/data
@@ -51,8 +51,8 @@ services:
     image: postgres:16-alpine
     container_name: tukangku-postgres
     environment:
-      POSTGRES_USER: tukangku
-      POSTGRES_PASSWORD: tukangku123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
@@ -60,7 +60,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tukangku -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -76,15 +76,16 @@ services:
       - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
-      SPRING_DATASOURCE_USERNAME: tukangku
-      SPRING_DATASOURCE_PASSWORD: tukangku123
-      JWT_SECRET: tukangku-super-secret-jwt-key-min-32-chars-2024
-      JWT_EXPIRATION_MS: 86400000
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS}
       MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: tukangku
-      MINIO_SECRET_KEY: tukangku123
-      MINIO_PUBLIC_URL: http://localhost:9000
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id.apps.googleusercontent.com}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,13 +103,13 @@ services:
       - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/worker_db
-      SPRING_DATASOURCE_USERNAME: tukangku
-      SPRING_DATASOURCE_PASSWORD: tukangku123
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: tukangku
-      MINIO_SECRET_KEY: tukangku123
-      MINIO_PUBLIC_URL: http://localhost:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,13 +129,13 @@ services:
       - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/review_db
-      SPRING_DATASOURCE_USERNAME: tukangku
-      SPRING_DATASOURCE_PASSWORD: tukangku123
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MINIO_URL: http://minio:9000
-      MINIO_ACCESS_KEY: tukangku
-      MINIO_SECRET_KEY: tukangku123
-      MINIO_PUBLIC_URL: http://localhost:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,8 +155,8 @@ services:
       - "8084:8084"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/booking_db
-      SPRING_DATASOURCE_USERNAME: tukangku
-      SPRING_DATASOURCE_PASSWORD: tukangku123
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       WORKER_SERVICE_URL: http://nurse-service:8082
     depends_on:
       postgres:
@@ -177,7 +178,8 @@ services:
       WORKER_SERVICE_URL: http://nurse-service:8082
       REVIEW_SERVICE_URL: http://review-service:8083
       BOOKING_SERVICE_URL: http://booking-service:8084
-      JWT_SECRET: tukangku-super-secret-jwt-key-min-32-chars-2024
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN}
     depends_on:
       - auth-service
       - nurse-service
