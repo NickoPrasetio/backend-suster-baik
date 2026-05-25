@@ -33,7 +33,7 @@ public class UserEntity {
     @Builder.Default
     private String userType = "CUSTOMER";
 
-    /** LOCAL | GOOGLE */
+    /** LOCAL | GOOGLE | FACEBOOK */
     @Column(nullable = false)
     @Builder.Default
     private String provider = "LOCAL";
@@ -41,6 +41,10 @@ public class UserEntity {
     /** Google subject ID — null untuk user yang daftar manual */
     @Column(name = "google_id", unique = true)
     private String googleId;
+
+    /** Facebook user ID — null untuk user yang tidak pakai Facebook */
+    @Column(name = "facebook_id", unique = true)
+    private String facebookId;
 
     private Double latitude;
     private Double longitude;

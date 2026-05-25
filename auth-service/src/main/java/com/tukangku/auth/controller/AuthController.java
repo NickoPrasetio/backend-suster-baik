@@ -1,6 +1,8 @@
 package com.tukangku.auth.controller;
 
 import com.tukangku.auth.dto.AuthResponse;
+import com.tukangku.auth.dto.FacebookAuthRequest;
+import com.tukangku.auth.dto.FacebookCompleteRequest;
 import com.tukangku.auth.dto.GoogleAuthRequest;
 import com.tukangku.auth.dto.GoogleCheckResponse;
 import com.tukangku.auth.dto.GoogleCompleteRequest;
@@ -8,6 +10,7 @@ import com.tukangku.auth.dto.LoginRequest;
 import com.tukangku.auth.dto.RegisterRequest;
 import com.tukangku.auth.dto.UpdateProfileRequest;
 import com.tukangku.auth.service.AuthService;
+import com.tukangku.auth.service.FacebookAuthService;
 import com.tukangku.auth.service.GoogleAuthService;
 import com.tukangku.auth.service.MinioService;
 import jakarta.validation.Valid;
@@ -26,9 +29,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService       authService;
-    private final GoogleAuthService googleAuthService;
-    private final MinioService      minioService;
+    private final AuthService        authService;
+    private final GoogleAuthService  googleAuthService;
+    private final FacebookAuthService facebookAuthService;
+    private final MinioService       minioService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -65,6 +69,37 @@ public class AuthController {
     public ResponseEntity<?> googleComplete(@Valid @RequestBody GoogleCompleteRequest request) {
         try {
             AuthResponse response = googleAuthService.completeSignup(
+                    request.getAccessToken(), request.getUserType(), request.getPhone());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ─── Facebook OAuth ───────────────────────────────────────────────────────
+
+    /**
+     * Step 1 — Cek apakah user Facebook sudah ada di database.
+     */
+    @PostMapping("/facebook")
+    public ResponseEntity<?> facebookCheck(@Valid @RequestBody FacebookAuthRequest request) {
+        try {
+            GoogleCheckResponse response = facebookAuthService.checkUser(request.getAccessToken());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Step 2 — Selesaikan registrasi user Facebook baru.
+     */
+    @PostMapping("/facebook/complete")
+    public ResponseEntity<?> facebookComplete(@Valid @RequestBody FacebookCompleteRequest request) {
+        try {
+            AuthResponse response = facebookAuthService.completeSignup(
                     request.getAccessToken(), request.getUserType(), request.getPhone());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
