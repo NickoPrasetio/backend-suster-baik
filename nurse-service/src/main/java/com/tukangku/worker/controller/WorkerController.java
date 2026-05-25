@@ -123,6 +123,19 @@ public class WorkerController {
     }
 
     /**
+     * Internal endpoint — hanya dipanggil oleh booking-service.
+     * Resolve authUserId (dari JWT) → worker profile (termasuk worker.id).
+     */
+    @GetMapping("/internal/workers/by-auth/{authUserId}")
+    public ResponseEntity<?> getWorkerByAuthUserId(@PathVariable String authUserId) {
+        try {
+            return ResponseEntity.ok(workerService.getByAuthUserId(authUserId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Internal endpoint — hanya dipanggil oleh booking-service (tidak melalui Gateway).
      * Atomik: validasi workStatus OPEN, set BOOKED, return worker info.
      */

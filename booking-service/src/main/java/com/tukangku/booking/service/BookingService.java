@@ -68,6 +68,41 @@ public class BookingService {
                 .toList();
     }
 
+    /**
+     * Ambil semua order (booking) yang ditujukan ke tukang yang sedang login.
+     * authUserId di-resolve ke workerId via nurse-service internal call.
+     */
+    public List<BookingDto> getWorkerOrders(String authUserId) {
+        String workerId = workerClient.getWorkerIdByAuthUserId(authUserId);
+        return bookingRepository.findByWorkerIdOrderByCreatedAtDesc(workerId)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    /**
+     * Tukang memulai/konfirmasi order miliknya.
+     * Validasi: status harus PENDING, requester harus tukang pemilik booking.
+     */
+    @Transactional
+    public BookingDto confirmByTukang(String bookingId, String authUserId) {
+        String workerId = workerClient.getWorkerIdByAuthUserId(authUserId);
+
+        BookingEntity booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));
+
+        if (!booking.getWorkerId().equals(workerId)) {
+            throw new IllegalStateException("Tidak diizinkan mengubah status booking ini");
+        }
+        if (!"PENDING".equals(booking.getStatus())) {
+            throw new IllegalStateException("Booking sudah diproses sebelumnya (status: " + booking.getStatus() + ")");
+        }
+
+        booking.setStatus("CONFIRMED");
+        booking = bookingRepository.save(booking);
+        return toDto(booking);
+    }
+
     public BookingDto getById(String bookingId, String requesterId) {
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking tidak ditemukan"));

@@ -23,6 +23,32 @@ public class WorkerClient {
     private String workerServiceUrl;
 
     /**
+     * Resolve authUserId (dari JWT) → workerId di nurse-service.
+     * Dipakai oleh GET /api/bookings/my-orders agar tukang bisa melihat order-nya
+     * tanpa perlu tahu workerId-nya sendiri.
+     *
+     * @throws IllegalArgumentException jika profil tukang belum terhubung
+     */
+    public String getWorkerIdByAuthUserId(String authUserId) {
+        String url = workerServiceUrl + "/internal/workers/by-auth/" + authUserId;
+        try {
+            ResponseEntity<WorkerInfoDto> response = restTemplate.getForEntity(url, WorkerInfoDto.class);
+            WorkerInfoDto worker = response.getBody();
+            if (worker == null || worker.getId() == null) {
+                throw new IllegalArgumentException("Profil tukang tidak ditemukan");
+            }
+            return worker.getId();
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new IllegalArgumentException("Profil tukang belum terhubung. Hubungi admin untuk aktivasi.");
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error resolving workerId for authUserId {}: {}", authUserId, e.getMessage());
+            throw new IllegalArgumentException("Gagal menghubungi worker service");
+        }
+    }
+
+    /**
      * Panggil endpoint internal di worker-service yang secara atomik:
      * 1. Validasi workStatus == OPEN
      * 2. Set workStatus = BOOKED, isAvailable = false
